@@ -3,6 +3,10 @@
 云尾笔记，像一直跟在你身后的私有知识云尾巴：数据留在你自己的设备里，同时保持随时可访问的云端体验。  
 它基于 Next.js + Prisma + PostgreSQL 构建，提供分类与笔记 CRUD、Markdown 编辑预览、截图上传、全文检索、收藏/置顶和移动端适配等核心能力。
 
+## 界面预览
+
+![云尾笔记界面预览](./docs/screenshots/app-overview.png)
+
 ## 技术栈
 
 - Next.js 16 + React 19 + TypeScript
