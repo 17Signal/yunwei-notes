@@ -32,6 +32,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/postcss.config.mjs ./postcss.config.mjs
 COPY --from=builder /app/tailwind.config.ts ./tailwind.config.ts
@@ -44,4 +45,4 @@ COPY --from=builder /app/types ./types
 
 EXPOSE 3000
 
-CMD ["pnpm", "start", "--hostname", "0.0.0.0", "--port", "3000"]
+CMD ["pnpm", "docker:start"]
