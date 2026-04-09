@@ -5,10 +5,11 @@ import process from "node:process";
 
 import dotenv from "dotenv";
 
-import { validateSetupEnv } from "../lib/setup/preflight.ts";
+import { validateSetupEnv } from "../lib/setup/preflight.shared.mjs";
 
 const ENV_FILE_NAME = ".env";
 const DEFAULT_UPLOAD_DIR = "./data/uploads";
+const SETUP_COMMAND = "pnpm project:setup";
 
 async function runSetup() {
   const envPath = path.resolve(process.cwd(), ENV_FILE_NAME);
@@ -17,7 +18,7 @@ async function runSetup() {
     await access(envPath);
   } catch {
     console.error("Missing .env file.");
-    console.error("Copy .env.example to .env, then run pnpm setup again.");
+    console.error(`Copy .env.example to .env, then run ${SETUP_COMMAND} again.`);
     process.exit(1);
   }
 
@@ -33,7 +34,7 @@ async function runSetup() {
     for (const error of validation.errors) {
       console.error(`- ${error}`);
     }
-    console.error("Update your .env values and run pnpm setup again.");
+    console.error(`Update your .env values and run ${SETUP_COMMAND} again.`);
     process.exit(1);
   }
 
