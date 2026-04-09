@@ -11,11 +11,13 @@ This document is the longer operational reference for running Yunwei Notes.
 
 ## Environment Setup
 
-1. Copy `.env.example` to `.env`
-2. Generate a password hash and paste it into `APP_PASSWORD_HASH`:
+1. Install dependencies:
+   `pnpm install`
+2. Copy `.env.example` to `.env`
+3. Generate a password hash and paste it into `APP_PASSWORD_HASH`:
    `node scripts/hash-password.mjs "your-password"`
-3. Set a strong `SESSION_SECRET` (at least 32 chars)
-4. Run setup:
+4. Set a strong `SESSION_SECRET` (at least 32 chars)
+5. Run setup:
    `pnpm run setup`
 
 `pnpm run setup` validates required environment values, creates the upload directory, and runs `pnpm prisma:generate`.
@@ -93,4 +95,3 @@ Optional hardening and access setup:
 - `SESSION_SECRET must be at least 32 characters`: update `.env`, rerun setup
 - Login fails with bcrypt parse/compare issues: confirm `APP_PASSWORD_HASH` includes escaped `$` in `.env` (for example `\$2b\$12\$...`)
 - Docker app container exits early: check `pnpm docker:logs` for migration or DB readiness errors
-

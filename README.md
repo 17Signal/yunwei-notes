@@ -36,13 +36,14 @@ Docker startup behavior in this branch:
 
 ### Path 2: Local Development
 
-1. Prepare PostgreSQL and create database `notes_selfhosted`
-2. Copy env file: `Copy-Item .env.example .env`
-3. Generate password hash and set `APP_PASSWORD_HASH` in `.env`:
+1. Install dependencies: `pnpm install`
+2. Prepare PostgreSQL and create database `notes_selfhosted`
+3. Copy env file: `Copy-Item .env.example .env`
+4. Generate password hash and set `APP_PASSWORD_HASH` in `.env`:
    `node scripts/hash-password.mjs "your-password"`
-4. Run setup: `pnpm run setup`
-5. Apply development migrations: `pnpm prisma:migrate:dev`
-6. Start dev server: `pnpm dev`
+5. Run setup: `pnpm run setup`
+6. Apply development migrations: `pnpm prisma:migrate:dev`
+7. Start dev server: `pnpm dev`
 
 ## Features
 
@@ -72,4 +73,3 @@ For production/deployment details, backup guidance, runtime commands, and troubl
 - `pnpm docker:up`
 - `pnpm docker:down`
 - `pnpm docker:logs`
-
