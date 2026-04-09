@@ -19,14 +19,18 @@
 
 ### 方式一：Docker Compose（推荐）
 
-1. 复制环境变量文件：`Copy-Item .env.example .env`
-2. 把 `.env` 里的 `SESSION_SECRET` 改成你自己的随机密钥，长度至少 32 位，不要保留示例占位值
-3. 安装依赖：`pnpm install`
-4. 生成登录密码哈希，并把输出的 `APP_PASSWORD_HASH` 填回 `.env`：
-   `node scripts/hash-password.mjs "你的密码"`
-5. 运行初始化：`pnpm run setup`
-6. 启动容器：`pnpm docker:up`
-7. 打开 `http://localhost:3000`
+1. 安装依赖：`pnpm install`
+2. 一键生成 `.env`：`pnpm run init:env "你的密码"`
+3. 运行初始化：`pnpm run setup`
+4. 启动容器：`pnpm docker:up`
+5. 打开 `http://localhost:3000`
+
+`pnpm run init:env` 会自动：
+
+- 基于 `.env.example` 生成 `.env`
+- 生成随机 `SESSION_SECRET`
+- 生成 `APP_PASSWORD_HASH`
+- 如果 `.env` 已存在则直接退出，不会覆盖现有配置
 
 当前分支里的 Docker 启动行为：
 
@@ -38,14 +42,11 @@
 ### 方式二：本机开发
 
 1. 准备 PostgreSQL，并创建数据库 `notes_selfhosted`
-2. 复制环境变量文件：`Copy-Item .env.example .env`
-3. 把 `.env` 里的 `SESSION_SECRET` 改成你自己的随机密钥，长度至少 32 位，不要保留示例占位值
-4. 安装依赖：`pnpm install`
-5. 生成登录密码哈希，并把输出的 `APP_PASSWORD_HASH` 填回 `.env`：
-   `node scripts/hash-password.mjs "你的密码"`
-6. 运行初始化：`pnpm run setup`
-7. 执行开发环境迁移：`pnpm prisma:migrate:dev`
-8. 启动开发服务：`pnpm dev`
+2. 安装依赖：`pnpm install`
+3. 一键生成 `.env`：`pnpm run init:env "你的密码"`
+4. 运行初始化：`pnpm run setup`
+5. 执行开发环境迁移：`pnpm prisma:migrate:dev`
+6. 启动开发服务：`pnpm dev`
 
 ## 功能清单
 
@@ -67,6 +68,7 @@
 
 ## 常用命令
 
+- `pnpm run init:env "你的密码"`
 - `pnpm run setup`
 - `pnpm dev`
 - `pnpm test`

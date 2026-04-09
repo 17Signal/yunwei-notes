@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "init:env": "node scripts/init-env.mjs",
     "setup": "node scripts/setup.mjs",
     "dev": "next dev",
     "build": "next build",
