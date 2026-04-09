@@ -11,12 +11,12 @@ This document is the longer operational reference for running Yunwei Notes.
 
 ## Environment Setup
 
-1. Install dependencies:
+1. Copy `.env.example` to `.env`
+2. Replace `SESSION_SECRET` with a real random secret (minimum 32 characters). Do not keep the example placeholder.
+3. Install dependencies:
    `pnpm install`
-2. Copy `.env.example` to `.env`
-3. Generate a password hash and paste it into `APP_PASSWORD_HASH`:
+4. Generate a password hash and paste it into `APP_PASSWORD_HASH`:
    `node scripts/hash-password.mjs "your-password"`
-4. Set a strong `SESSION_SECRET` (at least 32 chars)
 5. Run setup:
    `pnpm run setup`
 
@@ -49,16 +49,19 @@ This means migrations are auto-applied during container startup.
 
 1. Ensure PostgreSQL is running and create database `notes_selfhosted`
 2. Configure `.env` values
-3. Run:
+3. Install dependencies:
+   `pnpm install`
+4. Run:
    `pnpm run setup`
-4. Apply migrations for local development:
+5. Apply migrations for local development:
    `pnpm prisma:migrate:dev`
-5. Start app:
+6. Start app:
    `pnpm dev`
 
 For local production-like startup (without Docker), use:
 
 - `pnpm prisma:migrate:deploy`
+- `pnpm build`
 - `pnpm start --hostname 0.0.0.0 --port 3000`
 
 ## Data and Persistence

@@ -19,13 +19,14 @@ It includes category/note CRUD, Markdown editing and preview, attachment uploads
 
 ### Path 1: Docker Compose (recommended)
 
-1. Install dependencies: `pnpm install`
-2. Copy env file: `Copy-Item .env.example .env`
-3. Generate password hash and set `APP_PASSWORD_HASH` in `.env`:
+1. Copy env file: `Copy-Item .env.example .env`
+2. Replace `SESSION_SECRET` in `.env` with a real random secret (minimum 32 characters). Do not keep the example placeholder.
+3. Install dependencies: `pnpm install`
+4. Generate password hash and set `APP_PASSWORD_HASH` in `.env`:
    `node scripts/hash-password.mjs "your-password"`
-4. Run setup: `pnpm run setup`
-5. Start containers: `pnpm docker:up`
-6. Open `http://localhost:3000`
+5. Run setup: `pnpm run setup`
+6. Start containers: `pnpm docker:up`
+7. Open `http://localhost:3000`
 
 Docker startup behavior in this branch:
 
@@ -36,14 +37,15 @@ Docker startup behavior in this branch:
 
 ### Path 2: Local Development
 
-1. Install dependencies: `pnpm install`
-2. Prepare PostgreSQL and create database `notes_selfhosted`
-3. Copy env file: `Copy-Item .env.example .env`
-4. Generate password hash and set `APP_PASSWORD_HASH` in `.env`:
+1. Prepare PostgreSQL and create database `notes_selfhosted`
+2. Copy env file: `Copy-Item .env.example .env`
+3. Replace `SESSION_SECRET` in `.env` with a real random secret (minimum 32 characters). Do not keep the example placeholder.
+4. Install dependencies: `pnpm install`
+5. Generate password hash and set `APP_PASSWORD_HASH` in `.env`:
    `node scripts/hash-password.mjs "your-password"`
-5. Run setup: `pnpm run setup`
-6. Apply development migrations: `pnpm prisma:migrate:dev`
-7. Start dev server: `pnpm dev`
+6. Run setup: `pnpm run setup`
+7. Apply development migrations: `pnpm prisma:migrate:dev`
+8. Start dev server: `pnpm dev`
 
 ## Features
 
