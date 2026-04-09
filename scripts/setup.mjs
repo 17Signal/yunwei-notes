@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdir, access } from "node:fs/promises";
+import { mkdir, access, readFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
@@ -9,7 +9,7 @@ import { validateSetupEnv } from "../lib/setup/preflight.shared.mjs";
 
 const ENV_FILE_NAME = ".env";
 const DEFAULT_UPLOAD_DIR = "./data/uploads";
-const SETUP_COMMAND = "pnpm project:setup";
+const SETUP_COMMAND = "pnpm run setup";
 
 async function runSetup() {
   const envPath = path.resolve(process.cwd(), ENV_FILE_NAME);
@@ -22,13 +22,17 @@ async function runSetup() {
     process.exit(1);
   }
 
-  const loaded = dotenv.config({ path: envPath, quiet: true });
-  if (loaded.error) {
-    console.error(`Failed to load ${ENV_FILE_NAME}: ${loaded.error.message}`);
+  let envFileText = "";
+  try {
+    envFileText = await readFile(envPath, "utf8");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Failed to read ${ENV_FILE_NAME}: ${message}`);
     process.exit(1);
   }
 
-  const validation = validateSetupEnv(process.env);
+  const parsedEnv = dotenv.parse(envFileText);
+  const validation = validateSetupEnv(parsedEnv);
   if (!validation.ok) {
     console.error("Setup environment validation failed:");
     for (const error of validation.errors) {
@@ -38,7 +42,11 @@ async function runSetup() {
     process.exit(1);
   }
 
-  const uploadDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR?.trim() || DEFAULT_UPLOAD_DIR);
+  for (const [key, value] of Object.entries(parsedEnv)) {
+    process.env[key] = value;
+  }
+
+  const uploadDir = path.resolve(process.cwd(), parsedEnv.UPLOAD_DIR?.trim() || DEFAULT_UPLOAD_DIR);
   await mkdir(uploadDir, { recursive: true });
   console.log(`Upload directory ready: ${uploadDir}`);
 
