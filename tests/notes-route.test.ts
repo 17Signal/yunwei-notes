@@ -1,11 +1,14 @@
-import "dotenv/config";
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const searchNotesMock = vi.hoisted(() => vi.fn());
+const prismaMock = vi.hoisted(() => ({}));
 
 vi.mock("@/lib/db-search", () => ({
   searchNotes: searchNotesMock,
+}));
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: prismaMock,
 }));
 
 describe("notes route", () => {
@@ -18,7 +21,7 @@ describe("notes route", () => {
       data: [
         {
           id: "22222222-2222-2222-2222-222222222222",
-          categoryId: "33333333-3333-3333-3333-333333333333",
+          categoryId: "33333333-3333-4333-8333-333333333333",
           title: "First note",
           contentPreview: "hello",
           starred: false,
@@ -33,16 +36,20 @@ describe("notes route", () => {
     });
 
     const { GET } = await import("../app/api/notes/route");
-    const response = await GET(new Request("http://localhost/api/notes?page=1&pageSize=20"));
+    const response = await GET(
+      new Request(
+        "http://localhost/api/notes?page=1&pageSize=20&categoryId=33333333-3333-4333-8333-333333333333&q=hello%20world&starred=true&pinned=false"
+      )
+    );
     const payload = await response.json();
 
     expect(searchNotesMock).toHaveBeenCalledWith({
       page: 1,
       pageSize: 20,
-      categoryId: undefined,
-      q: undefined,
-      pinned: undefined,
-      starred: undefined,
+      categoryId: "33333333-3333-4333-8333-333333333333",
+      q: "hello world",
+      pinned: false,
+      starred: true,
     });
     expect(response.status).toBe(200);
     expect(payload.pagination).toMatchObject({
@@ -51,7 +58,14 @@ describe("notes route", () => {
       total: 1,
       totalPages: 1,
     });
-    expect(payload.data[0].title).toBe("First note");
+    expect(payload.data[0]).toMatchObject({
+      id: "22222222-2222-2222-2222-222222222222",
+      categoryId: "33333333-3333-4333-8333-333333333333",
+      title: "First note",
+      categoryName: "Default",
+      starred: false,
+      pinned: false,
+    });
   });
 
   it("returns 400 for invalid query params", async () => {
