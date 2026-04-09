@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { getPrismaDatasourceUrl } from "@/lib/prisma-config";
@@ -15,5 +18,14 @@ describe("getPrismaDatasourceUrl", () => {
     expect(getPrismaDatasourceUrl({})).toBe(
       "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public"
     );
+  });
+});
+
+describe("prisma.config.ts", () => {
+  it("uses a relative import so Prisma can load it during Docker builds", () => {
+    const configSource = readFileSync(resolve(process.cwd(), "prisma.config.ts"), "utf8");
+
+    expect(configSource).not.toContain('from "@/');
+    expect(configSource).toContain('from "./lib/prisma-config"');
   });
 });

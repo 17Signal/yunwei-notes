@@ -6,6 +6,9 @@ ENV PATH="$PNPM_HOME:$PATH"
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN corepack enable
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
 
 FROM base AS build-env
 # Prisma config and some server modules require env values during install/build.
@@ -15,6 +18,7 @@ ENV APP_PASSWORD_HASH="\$2b\$12\$01234567890123456789012345678901234567890123456
 
 FROM build-env AS deps
 COPY package.json pnpm-lock.yaml prisma.config.ts ./
+COPY lib/prisma-config.ts ./lib/prisma-config.ts
 COPY prisma ./prisma
 RUN pnpm install --frozen-lockfile
 
