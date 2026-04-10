@@ -13,8 +13,16 @@ const testFilePath = fileURLToPath(import.meta.url);
 const testDir = path.dirname(testFilePath);
 const repoRoot = path.resolve(testDir, "..");
 const packageJsonPath = path.join(repoRoot, "package.json");
+const dockerfilePath = path.join(repoRoot, "Dockerfile");
 
 describe("docker startup helpers", () => {
+  it("does not persist build-only auth placeholders via ENV instructions", async () => {
+    const dockerfile = await readFile(dockerfilePath, "utf8");
+
+    expect(dockerfile).not.toContain('ENV SESSION_SECRET=');
+    expect(dockerfile).not.toContain('ENV APP_PASSWORD_HASH=');
+  });
+
   it("wires package script name to docker startup entrypoint", async () => {
     const packageJsonRaw = await readFile(packageJsonPath, "utf8");
     const packageJson = JSON.parse(packageJsonRaw) as { scripts?: Record<string, string> };

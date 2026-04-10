@@ -13,20 +13,22 @@ RUN apt-get update \
 FROM base AS build-env
 # Prisma config and some server modules require env values during install/build.
 ENV DATABASE_URL="postgresql://postgres:postgres@build-placeholder:5432/notes_selfhosted?schema=public"
-ENV SESSION_SECRET="build-only-session-secret-1234567890"
-ENV APP_PASSWORD_HASH="\$2b\$12\$0123456789012345678901234567890123456789012345678901"
 
 FROM build-env AS deps
 COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY lib/prisma-config.ts ./lib/prisma-config.ts
 COPY prisma ./prisma
-RUN pnpm install --frozen-lockfile
+RUN SESSION_SECRET='build-only-session-secret-1234567890' \
+  APP_PASSWORD_HASH='$2b$12$0123456789012345678901234567890123456789012345678901' \
+  pnpm install --frozen-lockfile
 
 FROM build-env AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm prisma:generate
-RUN pnpm build
+RUN SESSION_SECRET='build-only-session-secret-1234567890' \
+  APP_PASSWORD_HASH='$2b$12$0123456789012345678901234567890123456789012345678901' \
+  pnpm build
 
 FROM base AS runner
 ENV NODE_ENV=production
