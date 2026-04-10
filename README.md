@@ -32,7 +32,7 @@
 - 生成 `APP_PASSWORD_HASH`
 - 如果 `.env` 已存在则直接退出，不会覆盖现有配置
 
-当前分支里的 Docker 启动行为：
+Docker 启动行为：
 
 - 应用容器入口是 `pnpm docker:start`
 - 会先等待 PostgreSQL 就绪
