@@ -14,8 +14,16 @@ const testDir = path.dirname(testFilePath);
 const repoRoot = path.resolve(testDir, "..");
 const packageJsonPath = path.join(repoRoot, "package.json");
 const dockerfilePath = path.join(repoRoot, "Dockerfile");
+const composePath = path.join(repoRoot, "compose.yaml");
 
 describe("docker startup helpers", () => {
+  it("keeps the database internal and restarts the app service automatically", async () => {
+    const composeFile = await readFile(composePath, "utf8");
+
+    expect(composeFile).not.toContain('"5432:5432"');
+    expect(composeFile).toMatch(/app:\s+restart:\s+unless-stopped/s);
+  });
+
   it("does not persist build-only auth placeholders via ENV instructions", async () => {
     const dockerfile = await readFile(dockerfilePath, "utf8");
 

@@ -35,6 +35,12 @@ Recommended for self-hosted deployment on a single machine.
 4. Tail logs:
    `pnpm docker:logs`
 
+Security defaults in the provided Compose file:
+
+- PostgreSQL stays on the internal Docker network by default and is not published on host port `5432`
+- The `app` service uses `restart: unless-stopped` so it comes back automatically after daemon restarts or host reboots
+- If you need direct database access from the host for debugging, temporarily add a port mapping yourself instead of leaving it open by default
+
 ### Actual Startup Behavior in Docker
 
 The app container command is `pnpm docker:start`. On every container start it will:

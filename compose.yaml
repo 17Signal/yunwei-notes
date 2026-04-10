@@ -12,12 +12,12 @@ services:
       timeout: 5s
       retries: 12
       start_period: 5s
-    ports:
-      - "5432:5432"
+    # Intentionally kept off the host network; the app reaches Postgres over the Compose network.
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   app:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
