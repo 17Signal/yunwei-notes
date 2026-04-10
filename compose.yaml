@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: notes_selfhosted
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notes_selfhosted"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    # Intentionally kept off the host network; the app reaches Postgres over the Compose network.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/notes_selfhosted?schema=public
+      UPLOAD_DIR: /app/data/uploads
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads_data:/app/data/uploads
+
+volumes:
+  postgres_data:
+  uploads_data:
