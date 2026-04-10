@@ -60,12 +60,6 @@
 - 上传附件到 `./data/uploads` 并插入 Markdown
 - 登录页 + HttpOnly 会话 Cookie
 
-## 部署与运维
-
-更完整的部署、备份、运行命令和排障说明见：
-
-- [docs/deployment.md](./docs/deployment.md)
-
 ## 常用命令
 
 - `pnpm run init:env "你的密码"`

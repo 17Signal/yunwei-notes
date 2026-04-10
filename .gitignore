@@ -38,6 +38,8 @@ yarn-error.log*
 /data/uploads/*
 !/data/uploads/.gitkeep
 /.worktrees/
+/docs/superpowers/
+/docs/deployment.md
 
 # vercel
 .vercel
