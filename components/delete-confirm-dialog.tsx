@@ -29,7 +29,7 @@ export function DeleteConfirmDialog({
   trigger,
   title,
   description,
-  confirmText = "Delete",
+  confirmText = "确认删除",
   loading = false,
   onConfirm,
 }: DeleteConfirmDialogProps) {
@@ -37,7 +37,10 @@ export function DeleteConfirmDialog({
   const [pending, setPending] = useState(false);
 
   return (
-    <AlertDialog open={open} onOpenChange={(nextOpen) => !pending && setOpen(nextOpen)}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => !pending && setOpen(nextOpen)}
+    >
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -45,7 +48,7 @@ export function DeleteConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>取消</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={loading || pending}
@@ -62,7 +65,9 @@ export function DeleteConfirmDialog({
               }
             }}
           >
-            {loading || pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {loading || pending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : null}
             {confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>

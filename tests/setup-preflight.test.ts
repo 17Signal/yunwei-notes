@@ -14,23 +14,38 @@ describe("validateSetupEnv", () => {
 
   it("rejects short session secrets", () => {
     const result = validateSetupEnv({
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public",
+      DATABASE_URL:
+        "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public",
       SESSION_SECRET: "too-short",
-      APP_PASSWORD_HASH: "\\$2b\\$12\\$exampleexampleexampleexampleexampleexampleexample",
+      APP_PASSWORD_HASH:
+        "\\$2b\\$12\\$exampleexampleexampleexampleexampleexampleexample",
     });
 
     expect(result.ok).toBe(false);
-    expect(result.errors).toContain("SESSION_SECRET must be at least 32 characters long.");
+    expect(result.errors).toContain(
+      "SESSION_SECRET must be at least 32 characters long.",
+    );
   });
 
   it("accepts a valid minimum configuration", () => {
     const result = validateSetupEnv({
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public",
+      DATABASE_URL:
+        "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public",
       SESSION_SECRET: "12345678901234567890123456789012",
-      APP_PASSWORD_HASH: "\\$2b\\$12\\$exampleexampleexampleexampleexampleexampleexample",
+      APP_PASSWORD_HASH: "\\$2b\\$12\\$" + "a".repeat(53),
     });
 
     expect(result.ok).toBe(true);
     expect(result.errors).toEqual([]);
+  });
+  it("rejects example secrets and malformed connection settings", () => {
+    const result = validateSetupEnv({
+      DATABASE_URL: "https://example.com",
+      SESSION_SECRET: "replace-with-32+chars-random-string",
+      APP_PASSWORD_HASH: "placeholder",
+      COOKIE_SECURE: "yes",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors).toHaveLength(4);
   });
 });

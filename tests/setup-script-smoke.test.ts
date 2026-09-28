@@ -12,7 +12,7 @@ const repoRoot = path.resolve(testDir, "..");
 const setupScriptPath = path.join(repoRoot, "scripts", "setup.mjs");
 const packageJsonPath = path.join(repoRoot, "package.json");
 
-function runSetupInDir(cwd: string, env: NodeJS.ProcessEnv = {}) {
+function runSetupInDir(cwd: string, env: Partial<NodeJS.ProcessEnv> = {}) {
   return spawnSync("node", [setupScriptPath], {
     cwd,
     env: {
@@ -26,26 +26,34 @@ function runSetupInDir(cwd: string, env: NodeJS.ProcessEnv = {}) {
 describe("setup script smoke checks", () => {
   it("wires package script name to setup entrypoint", async () => {
     const packageJsonRaw = await readFile(packageJsonPath, "utf8");
-    const packageJson = JSON.parse(packageJsonRaw) as { scripts?: Record<string, string> };
+    const packageJson = JSON.parse(packageJsonRaw) as {
+      scripts?: Record<string, string>;
+    };
 
     expect(packageJson.scripts?.setup).toBe("node scripts/setup.mjs");
   });
 
   it("fails with actionable output when .env is missing", async () => {
-    const tmpDir = await mkdtemp(path.join(os.tmpdir(), "yunwei-setup-missing-env-"));
+    const tmpDir = await mkdtemp(
+      path.join(os.tmpdir(), "yunwei-setup-missing-env-"),
+    );
     try {
       const result = runSetupInDir(tmpDir);
 
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("Missing .env file.");
-      expect(result.stderr).toContain("Copy .env.example to .env, then run pnpm run setup again.");
+      expect(result.stderr).toContain(
+        "Copy .env.example to .env, then run pnpm run setup again.",
+      );
     } finally {
       await rm(tmpDir, { recursive: true, force: true });
     }
   });
 
   it("does not allow inherited shell env vars to bypass .env validation", async () => {
-    const tmpDir = await mkdtemp(path.join(os.tmpdir(), "yunwei-setup-env-bypass-"));
+    const tmpDir = await mkdtemp(
+      path.join(os.tmpdir(), "yunwei-setup-env-bypass-"),
+    );
     try {
       await writeFile(
         path.join(tmpDir, ".env"),
@@ -53,11 +61,12 @@ describe("setup script smoke checks", () => {
           "SESSION_SECRET=12345678901234567890123456789012",
           "APP_PASSWORD_HASH=\\$2b\\$12\\$exampleexampleexampleexampleexampleexampleexample",
         ].join("\n"),
-        "utf8"
+        "utf8",
       );
 
       const result = runSetupInDir(tmpDir, {
-        DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public",
+        DATABASE_URL:
+          "postgresql://postgres:postgres@localhost:5432/notes_selfhosted?schema=public",
       });
 
       expect(result.status).toBe(1);

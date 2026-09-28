@@ -31,23 +31,39 @@ export async function GET(_: Request, { params }: Params): Promise<Response> {
 
     const absolutePath = resolveStoredFilePath(attachment.storedPath);
     const stat = await fsp.stat(absolutePath);
-    const stream = Readable.toWeb(fs.createReadStream(absolutePath)) as ReadableStream<Uint8Array>;
+    const stream = Readable.toWeb(
+      fs.createReadStream(absolutePath),
+    ) as ReadableStream<Uint8Array>;
 
     return new Response(stream, {
       status: 200,
       headers: {
         "Content-Type": attachment.mimeType,
         "Content-Length": String(stat.size),
-        "Cache-Control": "private, max-age=31536000, immutable",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      return apiError(400, "Invalid attachment id.", "VALIDATION_ERROR", error.flatten());
+      return apiError(
+        400,
+        "Invalid attachment id.",
+        "VALIDATION_ERROR",
+        error.flatten(),
+      );
     }
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return apiError(404, "Attachment file not found.", "ATTACHMENT_FILE_NOT_FOUND");
+      return apiError(
+        404,
+        "Attachment file not found.",
+        "ATTACHMENT_FILE_NOT_FOUND",
+      );
     }
-    return apiError(500, "Failed to read attachment.", "ATTACHMENT_READ_FAILED");
+    return apiError(
+      500,
+      "Failed to read attachment.",
+      "ATTACHMENT_READ_FAILED",
+    );
   }
 }

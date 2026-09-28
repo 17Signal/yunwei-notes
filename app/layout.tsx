@@ -5,7 +5,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "云尾笔记",
-  description: "云尾笔记，你的私有云尾巴。",
+  description:
+    "云尾笔记：支持 Markdown、中文搜索、分类收藏与图片上传的自托管私有笔记空间。",
+  robots: { index: false, follow: false },
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

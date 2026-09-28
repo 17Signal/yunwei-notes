@@ -3,7 +3,10 @@ import process from "node:process";
 
 import { Pool } from "pg";
 
-import { getDockerStartupCommands, waitForDatabase } from "../lib/docker/startup.shared.mjs";
+import {
+  getDockerStartupCommands,
+  waitForDatabase,
+} from "../lib/docker/startup.shared.mjs";
 
 function ensureDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL?.trim();
@@ -17,6 +20,7 @@ async function createDatabaseConnection(databaseUrl) {
   const pool = new Pool({
     connectionString: databaseUrl,
     max: 1,
+    connectionTimeoutMillis: 5000,
   });
 
   try {
@@ -75,7 +79,9 @@ async function runDockerStart() {
   await waitForDatabase({
     connect: async () => createDatabaseConnection(databaseUrl),
     onRetry: ({ attempt, maxAttempts, error }) => {
-      console.log(`PostgreSQL not ready yet (${attempt}/${maxAttempts}): ${error.message}`);
+      console.log(
+        `PostgreSQL not ready yet (${attempt}/${maxAttempts}): ${error.message}`,
+      );
     },
   });
 

@@ -4,7 +4,11 @@ import { NextResponse } from "next/server";
 import { verifySessionToken } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/constants";
 
-const PUBLIC_PATHS = new Set(["/login", "/api/auth/login", "/api/auth/session"]);
+const PUBLIC_PATHS = new Set([
+  "/login",
+  "/api/auth/login",
+  "/api/auth/session",
+]);
 
 function isStaticAsset(pathname: string): boolean {
   if (pathname.startsWith("/api/")) {
@@ -15,11 +19,33 @@ function isStaticAsset(pathname: string): boolean {
     return true;
   }
 
-  return /\.[a-z0-9]+$/i.test(pathname);
+  return pathname === "/icon.svg";
 }
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
+
+  if (
+    pathname.startsWith("/api/") &&
+    !["GET", "HEAD", "OPTIONS"].includes(request.method)
+  ) {
+    const origin = request.headers.get("origin");
+    // Next normalizes loopback hostnames in nextUrl. Compare against the actual
+    // Host header; reverse proxies must preserve it and set X-Forwarded-Proto.
+    const host = request.headers.get("host") ?? request.nextUrl.host;
+    const protocol =
+      request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ??
+      request.nextUrl.protocol.slice(0, -1);
+    if (
+      request.headers.get("sec-fetch-site") === "cross-site" ||
+      (origin && origin !== `${protocol}://${host}`)
+    ) {
+      return NextResponse.json(
+        { error: "不允许跨站修改数据。", code: "INVALID_ORIGIN" },
+        { status: 403 },
+      );
+    }
+  }
 
   if (isStaticAsset(pathname)) {
     return NextResponse.next();
@@ -44,7 +70,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
           error: "Authentication required.",
           code: "UNAUTHORIZED",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 

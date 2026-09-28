@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { apiError, apiOk, apiOkWithPagination } from "@/lib/api";
+import { readJson, apiError, apiOk, apiOkWithPagination } from "@/lib/api";
 import { searchNotes } from "@/lib/db-search";
 import { mapNoteBase } from "@/lib/mappers";
 import { prisma } from "@/lib/prisma";
@@ -21,8 +21,15 @@ export async function GET(request: Request): Promise<NextResponse> {
       totalPages: result.totalPages,
     });
   } catch (error) {
+    if (error instanceof SyntaxError)
+      return apiError(400, "Invalid JSON payload.", "VALIDATION_ERROR");
     if (error instanceof ZodError) {
-      return apiError(400, "Invalid query parameters.", "VALIDATION_ERROR", error.flatten());
+      return apiError(
+        400,
+        "Invalid query parameters.",
+        "VALIDATION_ERROR",
+        error.flatten(),
+      );
     }
     return apiError(500, "Failed to load notes.", "NOTES_FETCH_FAILED");
   }
@@ -30,7 +37,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const payload = createNoteSchema.parse(await request.json());
+    const payload = createNoteSchema.parse(await readJson(request));
     const note = await prisma.note.create({
       data: {
         categoryId: payload.categoryId,
@@ -56,13 +63,23 @@ export async function POST(request: Request): Promise<NextResponse> {
         },
         attachments: [],
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
+    if (error instanceof SyntaxError)
+      return apiError(400, "Invalid JSON payload.", "VALIDATION_ERROR");
     if (error instanceof ZodError) {
-      return apiError(400, "Invalid request payload.", "VALIDATION_ERROR", error.flatten());
+      return apiError(
+        400,
+        "Invalid request payload.",
+        "VALIDATION_ERROR",
+        error.flatten(),
+      );
     }
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
       return apiError(404, "Category not found.", "CATEGORY_NOT_FOUND");
     }
     return apiError(500, "Failed to create note.", "NOTE_CREATE_FAILED");

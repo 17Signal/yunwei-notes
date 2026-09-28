@@ -28,7 +28,11 @@ function buildWhereClause(filters: SearchFilters): Prisma.Sql {
   const conditions: Prisma.Sql[] = [];
 
   if (filters.q) {
-    conditions.push(Prisma.sql`n.search_vector @@ plainto_tsquery('simple', ${filters.q})`);
+    // PostgreSQL's simple dictionary does not segment Chinese. Literal substring
+    // matching also covers partial words and treats %, _ and backslashes as text.
+    const literal = `%${filters.q.replace(/[\\%_]/g, "\\$&")}%`;
+    conditions.push(Prisma.sql`(n.search_vector @@ plainto_tsquery('simple', ${filters.q})
+      OR n.title ILIKE ${literal} OR n.content ILIKE ${literal})`);
   }
   if (filters.categoryId) {
     conditions.push(Prisma.sql`n.category_id = ${filters.categoryId}::uuid`);
@@ -60,7 +64,7 @@ export async function searchNotes(filters: SearchFilters): Promise<{
       n.id,
       n.category_id,
       n.title,
-      n.content,
+      LEFT(n.content, 220) AS content,
       n.starred,
       n.pinned,
       n.created_at,
@@ -69,7 +73,7 @@ export async function searchNotes(filters: SearchFilters): Promise<{
     FROM notes n
     INNER JOIN categories c ON c.id = n.category_id
     ${whereSql}
-    ORDER BY n.pinned DESC, n.updated_at DESC
+    ORDER BY n.pinned DESC, n.updated_at DESC, n.id DESC
     LIMIT ${filters.pageSize}
     OFFSET ${offset}
   `);

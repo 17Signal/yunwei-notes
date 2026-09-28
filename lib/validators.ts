@@ -1,10 +1,14 @@
 import { z } from "zod";
 
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "@/lib/constants";
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+} from "@/lib/constants";
 import { clamp, parsePositiveInt } from "@/lib/utils";
 
 export const loginSchema = z.object({
-  password: z.string().min(1, "Password is required."),
+  password: z.string().min(1, "Password is required.").max(1024),
 });
 
 export const categorySchema = z.object({
@@ -26,10 +30,14 @@ export const updateNoteSchema = z
     content: z.string().max(200000).optional(),
     starred: z.boolean().optional(),
     pinned: z.boolean().optional(),
+    expectedVersion: z.number().int().positive().optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, {
-    message: "At least one field is required.",
-  });
+  .refine(
+    (value) => Object.keys(value).some((key) => key !== "expectedVersion"),
+    {
+      message: "At least one field is required.",
+    },
+  );
 
 export const uuidParamSchema = z.object({
   id: z.string().uuid(),
@@ -55,12 +63,19 @@ const booleanQueryParamSchema = z.preprocess(
     }
     return value;
   },
-  z.enum(["true", "false"]).transform((value) => value === "true").optional()
+  z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
 );
 
 export function parseNoteQuery(searchParams: URLSearchParams): NoteQueryInput {
   const page = parsePositiveInt(searchParams.get("page"), DEFAULT_PAGE);
-  const pageSize = clamp(parsePositiveInt(searchParams.get("pageSize"), DEFAULT_PAGE_SIZE), 1, MAX_PAGE_SIZE);
+  const pageSize = clamp(
+    parsePositiveInt(searchParams.get("pageSize"), DEFAULT_PAGE_SIZE),
+    1,
+    MAX_PAGE_SIZE,
+  );
 
   const categoryId = searchParams.get("categoryId")?.trim() || undefined;
   const q = searchParams.get("q")?.trim() || undefined;
@@ -76,7 +91,7 @@ export function parseNoteQuery(searchParams: URLSearchParams): NoteQueryInput {
 
   const parsed = z
     .object({
-      page: z.number().int().min(1),
+      page: z.number().int().min(1).max(1000000),
       pageSize: z.number().int().min(1).max(MAX_PAGE_SIZE),
       categoryId: z.string().uuid().optional(),
       q: z.string().max(200).optional(),

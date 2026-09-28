@@ -11,7 +11,11 @@ type UploadButtonProps = {
   onFileSelected: (file: File) => Promise<void> | void;
 };
 
-export function UploadButton({ disabled, loading, onFileSelected }: UploadButtonProps) {
+export function UploadButton({
+  disabled,
+  loading,
+  onFileSelected,
+}: UploadButtonProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
@@ -21,13 +25,18 @@ export function UploadButton({ disabled, loading, onFileSelected }: UploadButton
         type="file"
         accept="image/png,image/jpeg,image/webp"
         className="hidden"
+        aria-label="选择图片"
         onChange={async (event) => {
-          const file = event.target.files?.[0];
+          const input = event.currentTarget;
+          const file = input.files?.[0];
           if (!file) {
             return;
           }
-          await onFileSelected(file);
-          event.target.value = "";
+          try {
+            await onFileSelected(file);
+          } finally {
+            input.value = "";
+          }
         }}
       />
       <Button
@@ -37,8 +46,12 @@ export function UploadButton({ disabled, loading, onFileSelected }: UploadButton
         disabled={disabled || loading}
         onClick={() => fileInputRef.current?.click()}
       >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-        上传截图
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <ImagePlus className="h-4 w-4" />
+        )}
+        图片
       </Button>
     </>
   );

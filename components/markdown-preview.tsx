@@ -9,11 +9,22 @@ type MarkdownPreviewProps = {
 
 export function MarkdownPreview({ content }: MarkdownPreviewProps) {
   return (
-    <div className="markdown-body min-h-[220px] rounded-lg border border-border/80 bg-card p-4 text-sm shadow-sm">
+    <div className="markdown-body p-5 text-sm">
       {content.trim().length === 0 ? (
-        <p className="text-muted-foreground">暂无内容预览。</p>
+        <p className="text-muted-foreground">文字的另一面，在这里呈现。</p>
       ) : (
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            a: ({ children, ...props }) => (
+              <a {...props} target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       )}
     </div>
   );

@@ -1,4 +1,8 @@
-import type { Attachment as PrismaAttachment, Category as PrismaCategory, Note as PrismaNote } from "@prisma/client";
+import type {
+  Attachment as PrismaAttachment,
+  Category as PrismaCategory,
+  Note as PrismaNote,
+} from "@prisma/client";
 
 import { toISODate } from "@/lib/utils";
 import type { Attachment, Category } from "@/types/domain";
@@ -28,6 +32,7 @@ export function mapAttachment(attachment: PrismaAttachment): Attachment {
 export function mapNoteBase(note: PrismaNote) {
   return {
     id: note.id,
+    version: note.version,
     categoryId: note.categoryId,
     title: note.title,
     content: note.content,

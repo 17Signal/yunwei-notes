@@ -30,6 +30,7 @@ export type Attachment = {
 
 export type Note = {
   id: string;
+  version: number;
   categoryId: string;
   title: string;
   content: string;

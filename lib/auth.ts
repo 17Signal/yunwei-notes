@@ -7,7 +7,9 @@ const textEncoder = new TextEncoder();
 function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 32) {
-    throw new Error("SESSION_SECRET must be provided and be at least 32 characters long.");
+    throw new Error(
+      "SESSION_SECRET must be provided and be at least 32 characters long.",
+    );
   }
   return secret;
 }
@@ -17,7 +19,7 @@ function getAppPasswordHash(): string {
   if (!hash) {
     throw new Error("APP_PASSWORD_HASH is missing.");
   }
-  return hash;
+  return hash.replaceAll("\\$", "$");
 }
 
 function getSecretKey(): Uint8Array {
@@ -40,8 +42,11 @@ export async function createSessionToken(): Promise<string> {
 
 export async function verifySessionToken(token: string): Promise<boolean> {
   try {
-    await jwtVerify(token, getSecretKey(), { algorithms: ["HS256"] });
-    return true;
+    const { payload } = await jwtVerify(token, getSecretKey(), {
+      algorithms: ["HS256"],
+      subject: "notes-user",
+    });
+    return payload.role === "user" && typeof payload.exp === "number";
   } catch {
     return false;
   }
@@ -52,7 +57,11 @@ export function getCookieConfig() {
     name: SESSION_COOKIE_NAME,
     options: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure:
+        process.env.COOKIE_SECURE === "false"
+          ? false
+          : process.env.COOKIE_SECURE === "true" ||
+            process.env.NODE_ENV === "production",
       sameSite: "lax" as const,
       path: "/",
       maxAge: SESSION_MAX_AGE_SECONDS,

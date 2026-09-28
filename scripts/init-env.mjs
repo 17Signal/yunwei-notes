@@ -13,13 +13,22 @@ if (!password) {
   console.error('Usage: node scripts/init-env.mjs "your-password"');
   process.exit(1);
 }
+if (Buffer.byteLength(password, "utf8") > 72) {
+  console.error("Password must not exceed 72 UTF-8 bytes (bcrypt limit).");
+  process.exit(1);
+}
 
 try {
   await access(envPath);
   console.error(".env already exists. Refusing to overwrite it.");
   process.exit(1);
 } catch (error) {
-  if (error && typeof error === "object" && "code" in error && error.code !== "ENOENT") {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code !== "ENOENT"
+  ) {
     throw error;
   }
 }
@@ -33,19 +42,26 @@ try {
   process.exit(1);
 }
 
-const sessionSecret = randomBytes(36)
-  .toString("base64")
-  .replace(/[^A-Za-z0-9]/g, "")
-  .slice(0, 48);
+const sessionSecret = randomBytes(32).toString("hex");
 
 const hash = await bcrypt.hash(password, 12);
 const envSafeHash = hash.replaceAll("$", "\\$");
 
 const envContent = envTemplate
-  .replace('SESSION_SECRET="replace-with-32+chars-random-string"', `SESSION_SECRET="${sessionSecret}"`)
-  .replace('APP_PASSWORD_HASH="\\$2b\\$12\\$replace_with_bcrypt_hash"', `APP_PASSWORD_HASH="${envSafeHash}"`);
+  .replace(
+    'SESSION_SECRET="replace-with-32+chars-random-string"',
+    `SESSION_SECRET="${sessionSecret}"`,
+  )
+  .replace(
+    'APP_PASSWORD_HASH="\\$2b\\$12\\$replace_with_bcrypt_hash"',
+    `APP_PASSWORD_HASH="${envSafeHash}"`,
+  );
 
-await writeFile(envPath, envContent, "utf8");
+await writeFile(envPath, envContent, {
+  encoding: "utf8",
+  flag: "wx",
+  mode: 0o600,
+});
 
 console.log(".env created successfully.");
 console.log("Next step: run pnpm run setup");

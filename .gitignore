@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/.artifacts/
 
 # next.js
 /.next/
@@ -40,6 +43,11 @@ yarn-error.log*
 /.worktrees/
 /docs/superpowers/
 /docs/deployment.md
+*.log
+*.sql.gz
+*.dump
+/uploads-backup/
+/backups/
 
 # vercel
 .vercel
